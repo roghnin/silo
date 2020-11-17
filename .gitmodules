@@ -1,4 +1,4 @@
 [submodule "masstree"]
 	path = masstree
-	url = git://github.com/roghnin/masstree-beta.git
+	url = https://github.com/roghnin/masstree-beta.git
 	branch = silo-version
