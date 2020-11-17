@@ -34,6 +34,10 @@
 #include "masstree/mtcounters.hh"
 #include "masstree/circular_int.hh"
 
+#if __GNUC__ >= 9
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
+
 class simple_threadinfo {
  public:
     simple_threadinfo()

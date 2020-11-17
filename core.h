@@ -5,6 +5,10 @@
 #include "macros.h"
 #include "util.h"
 
+#if __GNUC__ >= 9
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 /**
  * XXX: CoreIDs are not recyclable for now, so NMAXCORES is really the number
  * of threads which can ever be spawned in the system

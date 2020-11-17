@@ -8,6 +8,10 @@
 #include "macros.h"
 #include "amd64.h"
 
+#if __GNUC__ >= 9
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif
+
 // Thread safety is ensured for many concurrent enqueuers but only one
 // concurrent dequeuer. That is, the head end is thread safe, but the tail end
 // can only be manipulated by a single thread.

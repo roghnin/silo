@@ -1,11 +1,14 @@
 #ifndef _NDB_BENCH_ENCODER_H_
 #define _NDB_BENCH_ENCODER_H_
-
 #include <string>
 #include <stdint.h>
 #include "serializer.h"
 #include "../util.h"
 #include "../ndb_type_traits.h"
+
+#if __GNUC__ >= 9
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+#endif
 
 #if NDB_MASSTREE
 #include "../masstree/str.hh"
