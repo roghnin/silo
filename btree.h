@@ -833,6 +833,12 @@ private:
       return lengths_[n] & LEN_TYPE_MASK;
     }
 
+    inline bool
+    is_layer(size_t n) const
+    {
+      return value_is_layer(n);
+    }
+
     inline void
     value_set_layer(size_t n)
     {
