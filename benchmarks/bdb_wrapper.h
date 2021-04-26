@@ -2,7 +2,7 @@
 #define _BDB_WRAPPER_H_
 
 #include <string>
-#include <db_cxx.h>
+#include <libdb4/db_cxx.h>
 
 #include "abstract_db.h"
 #include "../macros.h"
