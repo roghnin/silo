@@ -104,19 +104,26 @@ check_pointer_or_die(void *p, size_t alloc_size)
 #endif
 
 void *
-rcu::sync::alloc(size_t sz)
+rcu::sync::alloc(size_t sz, bool persistent)
 {
-  if (pin_cpu_ == -1)
-    // fallback to regular allocator
-    // return malloc(sz);
-    return RP_malloc(sz);
+  if (pin_cpu_ == -1){
+      // fallback to regular allocator
+      if (persistent){
+          return RP_malloc(sz);
+      } else {
+          return malloc(sz);
+      }
+  }
   auto sizes = ::allocator::ArenaSize(sz);
   auto arena = sizes.second;
   if (arena >= ::allocator::MAX_ARENAS) {
     // fallback to regular allocator
     ++evt_allocator_large_allocation;
-    // return malloc(sz);
-    return RP_malloc(sz);
+    if (persistent) {
+        return RP_malloc(sz);
+    } else {
+        return malloc(sz);
+    }
   }
   ensure_arena(arena);
   void *p = arenas_[arena];
@@ -131,11 +138,15 @@ rcu::sync::alloc(size_t sz)
 }
 
 void *
-rcu::sync::alloc_static(size_t sz)
+rcu::sync::alloc_static(size_t sz, bool persistent)
 {
-  if (pin_cpu_ == -1)
-    // return malloc(sz);
-    return RP_malloc(sz);
+  if (pin_cpu_ == -1){
+      if (persistent) {
+          return RP_malloc(sz);
+      } else {
+          return malloc(sz);
+      }
+  }
   // round up to hugepagesize
   static const size_t hugepgsize = ::allocator::GetHugepageSize();
   sz = slow_round_up(sz, hugepgsize);
@@ -144,11 +155,15 @@ rcu::sync::alloc_static(size_t sz)
 }
 
 void
-rcu::sync::dealloc(void *p, size_t sz)
+rcu::sync::dealloc(void *p, size_t sz, bool persistent)
 {
   if (!::allocator::ManagesPointer(p)) {
     // ::free(p);
-    RP_free(p);
+    if (persistent){
+        RP_free(p);
+    } else {
+      ::free(p);
+    }
     return;
   }
   auto sizes = ::allocator::ArenaSize(sz);
@@ -260,7 +275,7 @@ rcu::sync::do_cleanup()
 }
 
 void
-rcu::free_with_fn(void *p, deleter_t fn)
+rcu::free_with_fn(void *p, deleter_t fn, bool persistent)
 {
   sync &s = mysync();
   uint64_t cur_tick = 0; // ticker units
@@ -270,12 +285,12 @@ rcu::free_with_fn(void *p, deleter_t fn)
   INVARIANT(s.depth());
   // all threads are either at cur_tick or cur_tick + 1, so we must wait for
   // the system to move beyond cur_tick + 1
-  s.queue_.enqueue(delete_entry(p, fn), to_rcu_ticks(cur_tick + 1));
+  s.queue_.enqueue(delete_entry(p, fn, persistent), to_rcu_ticks(cur_tick + 1));
   ++evt_rcu_frees;
 }
 
 void
-rcu::dealloc_rcu(void *p, size_t sz)
+rcu::dealloc_rcu(void *p, size_t sz, bool persistent)
 {
   sync &s = mysync();
   uint64_t cur_tick = 0; // ticker units
@@ -285,7 +300,7 @@ rcu::dealloc_rcu(void *p, size_t sz)
   INVARIANT(s.depth());
   // all threads are either at cur_tick or cur_tick + 1, so we must wait for
   // the system to move beyond cur_tick + 1
-  s.queue_.enqueue(delete_entry(p, sz), to_rcu_ticks(cur_tick + 1));
+  s.queue_.enqueue(delete_entry(p, sz, persistent), to_rcu_ticks(cur_tick + 1));
   ++evt_rcu_frees;
 }
 

@@ -28,18 +28,29 @@ public:
   struct delete_entry {
       void* ptr;
       intptr_t action;
+      bool persistent;
 
       inline delete_entry(void* ptr, size_t sz)
-          : ptr(ptr), action(-sz) {
+          : ptr(ptr), action(-sz), persistent(false) {
           INVARIANT(action < 0);
       }
       inline delete_entry(void* ptr, deleter_t fn)
-          : ptr(ptr), action(reinterpret_cast<uintptr_t>(fn)) {
+          : ptr(ptr), action(reinterpret_cast<uintptr_t>(fn)), persistent(false) {
+          INVARIANT(action > 0);
+      }
+      inline delete_entry(void *ptr, size_t sz, bool pers)
+          : ptr(ptr), action(-sz), persistent(pers) {
+          INVARIANT(action < 0);
+      }
+      inline delete_entry(void *ptr, deleter_t fn, bool pers)
+          : ptr(ptr),
+            action(reinterpret_cast<uintptr_t>(fn)),
+            persistent(pers) {
           INVARIANT(action > 0);
       }
       void run(rcu::sync& s) {
           if (action < 0)
-              s.dealloc(ptr, -action);
+              s.dealloc(ptr, -action, persistent);
           else
               (*reinterpret_cast<deleter_t>(action))(ptr);
       }
@@ -142,14 +153,14 @@ public:
 
     // allocate a block of memory of size sz. caller needs to remember
     // the size of the allocation when calling free
-    void *alloc(size_t sz);
+    void *alloc(size_t sz,  bool persistent);
 
     // allocates a block of memory of size sz, with the intention of never
     // free-ing it. is meant for reasonably large allocations (order of pages)
-    void *alloc_static(size_t sz);
+    void *alloc_static(size_t sz, bool persistent);
 
-    void dealloc(void *p, size_t sz);
-    void dealloc_rcu(void *p, size_t sz);
+    void dealloc(void *p, size_t sz, bool persistent);
+    void dealloc_rcu(void *p, size_t sz, bool persistent);
 
     // try to release local arenas back to the allocator based on some simple
     // thresholding heuristics-- is relative expensive operation.  returns true
@@ -176,26 +187,26 @@ public:
 
   // thin forwarders
   inline void *
-  alloc(size_t sz)
+  alloc(size_t sz, bool persistent = false)
   {
-    return mysync().alloc(sz);
+    return (mysync().alloc(sz, persistent));
   }
 
   inline void *
-  alloc_static(size_t sz)
+  alloc_static(size_t sz, bool persistent = false)
   {
-    return mysync().alloc_static(sz);
+    return mysync().alloc_static(sz, persistent);
   }
 
   // this releases memory back to the allocator subsystem
   // this should NOT be used to free objects!
   inline void
-  dealloc(void *p, size_t sz)
+  dealloc(void *p, size_t sz, bool persistent = false)
   {
-    return mysync().dealloc(p, sz);
+    return mysync().dealloc(p, sz, persistent);
   }
 
-  void dealloc_rcu(void *p, size_t sz);
+  void dealloc_rcu(void *p, size_t sz, bool persistent = false);
 
   inline bool
   try_release()
@@ -209,13 +220,13 @@ public:
     mysync().do_cleanup();
   }
 
-  void free_with_fn(void *p, deleter_t fn);
+  void free_with_fn(void *p, deleter_t fn, bool persistent = false);
 
   template <typename T>
   inline void
-  free(T *p)
+  free(T *p, bool persistent = false)
   {
-    free_with_fn(p, deleter<T>);
+    free_with_fn(p, deleter<T>, persistent);
   }
 
   template <typename T>
