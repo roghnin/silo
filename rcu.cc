@@ -327,7 +327,7 @@ rcu::rcu()
   char *heap_prefix = (char *)malloc(L_cuserid + 6);
   cuserid(heap_prefix);
   strcat(heap_prefix, "_test");
-  RP_init(heap_prefix, RALLOC_REGION_SIZE);
+  RP_init(heap_prefix, RALLOC_REGION_SIZE, 200);
   free(heap_prefix);
   // init main thread
   Ralloc::set_tid(0);
