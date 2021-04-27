@@ -129,4 +129,7 @@
 // number of nanoseconds in 1 second (1e9)
 #define ONE_SECOND_NS 1000000000
 
+// region size of ralloc
+#define RALLOC_REGION_SIZE (64 * 1024 * 1024 * 1024ULL + 24)
+
 #endif /* _MACROS_H_ */

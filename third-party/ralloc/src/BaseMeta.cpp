@@ -906,8 +906,8 @@ void GarbageCollection::operator() () {
     _rgs->flush_region(SB_IDX);
     char* addr_to_flush = reinterpret_cast<char*>(base_md);
     // flush values in BaseMeta, including avail_sb and partial lists
-    for(size_t i = 0; i < sizeof(BaseMeta); i += CACHELINE_SIZE) {
-        addr_to_flush += CACHELINE_SIZE;
+    for(size_t i = 0; i < sizeof(BaseMeta); i += RALLOC_CACHELINE_SIZE) {
+        addr_to_flush += RALLOC_CACHELINE_SIZE;
         FLUSH(addr_to_flush);
     }
     FLUSHFENCE;

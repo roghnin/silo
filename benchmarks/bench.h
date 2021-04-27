@@ -7,6 +7,7 @@
 #include <vector>
 #include <utility>
 #include <string>
+#include <atomic>
 
 #include "abstract_db.h"
 #include "../macros.h"
@@ -42,6 +43,8 @@ extern int retry_aborted_transaction;
 extern int no_reset_counters;
 extern int backoff_aborted_transaction;
 
+extern std::atomic<int> ralloc_thread_cnt;
+
 class scoped_db_thread_ctx {
 public:
   scoped_db_thread_ctx(const scoped_db_thread_ctx &) = delete;
@@ -69,6 +72,7 @@ public:
   {
     txn_obj_buf.reserve(str_arena::MinStrReserveLength);
     txn_obj_buf.resize(db->sizeof_txn_object(txn_flags));
+    
   }
   inline void
   set_barrier(spin_barrier &b)
@@ -82,6 +86,7 @@ public:
     { // XXX(stephentu): this is a hack
       scoped_rcu_region r; // register this thread in rcu region
     }
+    Ralloc::set_tid(ralloc_thread_cnt.fetch_add(1));  // Hs: cannot exceed 100 for now.
     ALWAYS_ASSERT(b);
     b->count_down();
     b->wait_for();
@@ -135,6 +140,7 @@ public:
     {
       ALWAYS_ASSERT(frequency > 0.0);
       ALWAYS_ASSERT(frequency <= 1.0);
+      
     }
     std::string name;
     double frequency;

@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility>
 #include <string>
+#include <atomic>
 
 #include <stdlib.h>
 #include <sched.h>
@@ -43,6 +44,8 @@ int slow_exit = 0;
 int retry_aborted_transaction = 0;
 int no_reset_counters = 0;
 int backoff_aborted_transaction = 0;
+
+atomic<int> ralloc_thread_cnt;
 
 template <typename T>
 static void

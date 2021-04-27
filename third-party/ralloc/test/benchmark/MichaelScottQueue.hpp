@@ -83,8 +83,8 @@ private:
 	}
 
 	// Pointers to head and tail of the list
-	alignas(CACHELINE_SIZE) std::atomic<Node*> head;
-	alignas(CACHELINE_SIZE) std::atomic<Node*> tail;
+	alignas(RALLOC_CACHELINE_SIZE) std::atomic<Node*> head;
+	alignas(RALLOC_CACHELINE_SIZE) std::atomic<Node*> tail;
 
 	const int maxThreads;
 

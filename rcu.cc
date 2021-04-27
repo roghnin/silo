@@ -7,12 +7,15 @@
 #include <thread>
 #include <atomic>
 
+
+
 #include "rcu.h"
 #include "macros.h"
 #include "util.h"
 #include "thread.h"
 #include "counter.h"
 #include "lockguard.h"
+
 
 using namespace std;
 using namespace util;
@@ -105,13 +108,15 @@ rcu::sync::alloc(size_t sz)
 {
   if (pin_cpu_ == -1)
     // fallback to regular allocator
-    return malloc(sz);
+    // return malloc(sz);
+    return RP_malloc(sz);
   auto sizes = ::allocator::ArenaSize(sz);
   auto arena = sizes.second;
   if (arena >= ::allocator::MAX_ARENAS) {
     // fallback to regular allocator
     ++evt_allocator_large_allocation;
-    return malloc(sz);
+    // return malloc(sz);
+    return RP_malloc(sz);
   }
   ensure_arena(arena);
   void *p = arenas_[arena];
@@ -129,7 +134,8 @@ void *
 rcu::sync::alloc_static(size_t sz)
 {
   if (pin_cpu_ == -1)
-    return malloc(sz);
+    // return malloc(sz);
+    return RP_malloc(sz);
   // round up to hugepagesize
   static const size_t hugepgsize = ::allocator::GetHugepageSize();
   sz = slow_round_up(sz, hugepgsize);
@@ -141,7 +147,8 @@ void
 rcu::sync::dealloc(void *p, size_t sz)
 {
   if (!::allocator::ManagesPointer(p)) {
-    ::free(p);
+    // ::free(p);
+    RP_free(p);
     return;
   }
   auto sizes = ::allocator::ArenaSize(sz);
@@ -316,6 +323,19 @@ rcu::rcu()
     evt_allocator_arena_deallocations[i] =
       new event_counter("allocator_arena" + to_string(i) + "_deallocation");
   }
+  // initializing Ralloc:
+  char *heap_prefix = (char *)malloc(L_cuserid + 6);
+  cuserid(heap_prefix);
+  strcat(heap_prefix, "_test");
+  RP_init(heap_prefix, RALLOC_REGION_SIZE);
+  free(heap_prefix);
+  // init main thread
+  Ralloc::set_tid(0);
+}
+
+rcu::~rcu()
+{
+  RP_close();
 }
 
 struct rcu_stress_test_rec {

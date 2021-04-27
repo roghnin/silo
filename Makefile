@@ -76,7 +76,7 @@ else
 endif
 
 CXXFLAGS := -g -Wall -std=c++11
-CXXFLAGS += -MD -Ithird-party/lz4 -DCONFIG_H=\"$(CONFIG_H)\"
+CXXFLAGS += -MD -Ithird-party/lz4 -Ithird-party/ralloc/src -DCONFIG_H=\"$(CONFIG_H)\"
 ifeq ($(DEBUG_S),1)
         CXXFLAGS += -O0 -fno-omit-frame-pointer -DDEBUG
 else
@@ -97,7 +97,7 @@ else
 endif
 
 TOP     := $(shell echo $${PWD-`pwd`})
-LDFLAGS := -lpthread -lnuma -lrt -L/usr/lib64/libdb4/
+LDFLAGS := -lpthread -lnuma -lrt -L/usr/lib64/libdb4/ -Lthird-party/ralloc -lralloc
 
 LZ4LDFLAGS := -Lthird-party/lz4 -llz4 -Wl,-rpath,$(TOP)/third-party/lz4
 

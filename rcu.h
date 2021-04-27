@@ -9,6 +9,8 @@
 #include <list>
 #include <utility>
 
+#include <ralloc.hpp>
+
 #include "allocator.h"
 #include "counter.h"
 #include "spinlock.h"
@@ -270,6 +272,7 @@ public:
 private:
 
   rcu(); // private ctor to enforce singleton
+  ~rcu();
 
   static inline uint64_t constexpr
   to_rcu_ticks(uint64_t ticks)

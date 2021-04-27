@@ -68,7 +68,7 @@ public:
         HEAPFILE(file_path),
         curr_addr_ptr(nullptr),
         persist(p){
-        assert(size%CACHELINE_SIZE == 0); // size should be multiple of cache line size
+        assert(size%RALLOC_CACHELINE_SIZE == 0); // size should be multiple of cache line size
         if(persist){
             if(exists_test(HEAPFILE)){
                 __remap_persistent_region();
@@ -76,7 +76,7 @@ public:
                 __map_persistent_region();
                 if(imm_expand){//expand immediately
                     void* t;
-                    bool res = __nvm_region_allocator(&t,CACHELINE_SIZE,size); 
+                    bool res = __nvm_region_allocator(&t,RALLOC_CACHELINE_SIZE,size); 
                     if(!res) assert(0&&"region allocation fails!");
                     __store_heap_start(t);
                 }
@@ -88,7 +88,7 @@ public:
                 __map_transient_region();
                 if(imm_expand){//expand immediately
                     void* t;
-                    bool res = __nvm_region_allocator(&t,CACHELINE_SIZE,size); 
+                    bool res = __nvm_region_allocator(&t,RALLOC_CACHELINE_SIZE,size); 
                     if(!res) assert(0&&"region allocation fails!");
                     __store_heap_start(t);
                 }
@@ -271,7 +271,7 @@ public:
         RegionManager* target = regions[index];
         char* addr = regions_address[index];
         char* ending = target->curr_addr_ptr->load();
-        for(; addr < ending; addr += CACHELINE_SIZE) {
+        for(; addr < ending; addr += RALLOC_CACHELINE_SIZE) {
             FLUSH(addr);
         }
         FLUSHFENCE;

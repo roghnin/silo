@@ -66,7 +66,7 @@ struct TCaches
 	TCacheBin t_cache[MAX_SZ_IDX];
 	TCaches();
 	~TCaches();
-}__attribute__((aligned(CACHELINE_SIZE)));
+}__attribute__((aligned(RALLOC_CACHELINE_SIZE)));
 
 #endif // __TCACHE_H_
 

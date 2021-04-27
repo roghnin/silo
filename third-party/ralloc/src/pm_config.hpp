@@ -73,8 +73,8 @@ const int MAX_ROOTS = 1024;
 const int TYPE_SIZE = 4;
 const int PTR_SIZE = sizeof(void*);
 const int HEADER_SIZE = (TYPE_SIZE + PTR_SIZE);
-const int CACHELINE_SIZE = 64; // in byte
-const uint64_t CACHELINE_MASK = (uint64_t)(CACHELINE_SIZE) - 1;
+const int RALLOC_CACHELINE_SIZE = 64; // in byte 
+const uint64_t CACHELINE_MASK = (uint64_t)(RALLOC_CACHELINE_SIZE) - 1;
 const int PAGESIZE = 4096;//4K
 const uint64_t PAGE_MASK = (uint64_t)PAGESIZE - 1;
 
@@ -88,7 +88,7 @@ const uint64_t SC_MASK = (1ULL << 6) - 1;
 // allocations with size > MAX_SZ are not covered by a size class
 const int MAX_SZ = ((1 << 13) + (1 << 11) * 3);
 const uint64_t SBSIZE = (16 * PAGESIZE); // size of a superblock 64K
-const uint64_t DESCSIZE = CACHELINE_SIZE;
+const uint64_t DESCSIZE = RALLOC_CACHELINE_SIZE;
 const int SB_SHIFT = 16; // assume size of a superblock is 64K
 const int DESC_SHIFT = 6; // assume size of a descriptor is 64B
 const uint64_t SB_MASK = ~((1ULL<<SB_SHIFT) - 1);

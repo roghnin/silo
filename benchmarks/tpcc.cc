@@ -607,6 +607,7 @@ protected:
   virtual void
   on_run_setup() OVERRIDE
   {
+    Ralloc::set_tid(ralloc_thread_cnt.fetch_add(1));  // Hs: cannot exceed 100 for now.
     if (!pin_cpus)
       return;
     const size_t a = worker_id % coreid::num_cpus_online();

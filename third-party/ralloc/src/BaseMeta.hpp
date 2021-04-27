@@ -257,8 +257,8 @@ struct Descriptor {
             FLUSH(this);
             FLUSHFENCE;
         };
-}__attribute__((aligned(CACHELINE_SIZE)));
-static_assert(sizeof(Descriptor) == CACHELINE_SIZE, "Invalid Descriptor size");
+}__attribute__((aligned(RALLOC_CACHELINE_SIZE)));
+static_assert(sizeof(Descriptor) == RALLOC_CACHELINE_SIZE, "Invalid Descriptor size");
 
 /* 
  * struct ProcHeap
@@ -279,7 +279,7 @@ public:
     // std::mutex lk;
     ProcHeap() noexcept :
         partial_list(){};
-}__attribute__((aligned(CACHELINE_SIZE)));
+}__attribute__((aligned(RALLOC_CACHELINE_SIZE)));
 
 /* 
  * class GarbageCollection
@@ -495,8 +495,8 @@ public:
         // ralloc::public_flush_cache();
         char* addr = reinterpret_cast<char*>(this);
         // flush values in BaseMeta, including avail_sb and partial lists
-        for(size_t i = 0; i < sizeof(BaseMeta); i += CACHELINE_SIZE) {
-            addr += CACHELINE_SIZE;
+        for(size_t i = 0; i < sizeof(BaseMeta); i += RALLOC_CACHELINE_SIZE) {
+            addr += RALLOC_CACHELINE_SIZE;
             FLUSH(addr);
         }
         FLUSHFENCE;
@@ -554,7 +554,7 @@ private:
     Descriptor* desc_alloc();
     // put desc to avail_desc and flush it as unused
     void desc_retire(Descriptor* desc);
-}__attribute__((aligned(CACHELINE_SIZE)));
+}__attribute__((aligned(RALLOC_CACHELINE_SIZE)));
 
 // default (conservative) filter function which traverse all possible pointers
 // in the block
